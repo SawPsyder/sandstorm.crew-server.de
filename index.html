@@ -162,6 +162,23 @@
                 padding: 5px;
                 color: var(--text-color);
             }
+
+            #fancy-toast {
+                display: none;
+                position: fixed;
+                left: 50%;
+                bottom: 40px;
+                transform: translateX(-50%);
+                background: var(--secondary-color);
+                padding: 20px 40px;
+                border-radius: 5px;
+                font-size: 1.2em;
+                z-index: 2;
+                opacity: 0;
+                transition: opacity 0.5s, bottom 0.5s;
+                border: none;
+                color: var(--text-color);
+            }
         </style>
         <script type="text/javascript">
             let servers = [
@@ -267,6 +284,21 @@
                         last.focus();
                     }
                 });
+
+                const btn = document.getElementById('fancy-toast-btn');
+                const toast = document.getElementById('fancy-toast');
+                btn.onclick = function() {
+                    toast.style.display = 'block';
+                    setTimeout(() => {
+                        toast.style.opacity = '1';
+                        toast.style.bottom = '60px';
+                    }, 10);
+                    setTimeout(() => {
+                        toast.style.opacity = '0';
+                        toast.style.bottom = '40px';
+                        setTimeout(() => { toast.style.display = 'none'; }, 500);
+                    }, 6000);
+                };
             }
         </script>
     </head>
@@ -393,6 +425,14 @@ RoundTime=600
                             </code>
                         </pre>
                     </div>
+                </div>
+            </div>
+            <div style="text-align:center; margin-top:30px;">
+                <button id="fancy-toast-btn" style="background:none;border:none;cursor:pointer;">
+                    <span style="font-size:2em;">🥚</span>
+                </button>
+                <div id="fancy-toast">
+                    If you are interested in hosting your own server or have setting recommendations, feel free to reach out!
                 </div>
             </div>
         </div>
