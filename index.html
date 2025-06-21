@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html data-arp=""><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <style>
+        :root {
+            --primary-color: #19191a;
+            --secondary-color: #222222;
+            --text-color: #e7e7e7;
+            --text-trans-color: #fff0;
+        }
+
+        html, body {
+            font-family: sans-serif;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+        }
+
+        a {
+            background-color: var(--secondary-color);
+            border-radius: 5px;
+            margin: 0 10px 0 10px;
+        }
+
+        a svg {
+            padding: 7px 15px 0px 15px;
+        }
+
+        .menu {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            font-family: monospace;
+            height: 100px;
+        }
+
+        .menu-item {
+            font-size: 20px;
+            padding: 10px;
+            width: 200px;
+            margin: 20px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 5px;
+            transition-duration: .5s;
+            color: var(--text-color);
+        }
+
+        .menu-item:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .menu-item-active {
+            background-color: var(--secondary-color);
+        }
+
+        .segment {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+
+        .content {
+            display: none;
+            height: calc(100% - 100px);
+            flex-wrap: wrap;
+            align-content: center;
+        }
+
+        .content-sub {
+            width: 100%;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .content-active {
+            display: flex;
+        }
+
+        .statusframe {
+            width: 500px;
+            height: 80px;
+        }
+
+        .codeview {
+            width: 600px;
+            background-color: var(--secondary-color);
+            border: none;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .codeview-head {
+            width: 100%;
+            height: 50px;
+            background-color: var(--secondary-color);
+            border-bottom: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            color: var(--text-color);
+            cursor: pointer;
+        }
+
+        .codeview-code {
+            width: calc(100% - 20px);
+            height: 0px;
+            background-color: var(--secondary-color);
+            overflow: auto;
+            color: var(--text-trans-color);
+            padding: 0 10px 0 10px;
+            transition-duration: .5s;
+            overflow: hidden;
+        }
+
+        .codeview-code pre {
+            width: 100%;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .codeview-code pre code {
+            font-family: monospace;
+            padding: 0;
+            margin: 0;
+            text-align: left;
+        }
+
+        .codeview.codeview-extended .codeview-code{
+            height: auto;
+            color: var(--text-color);
+        }
+
+        .iframe-container {
+            width: 500px;
+            padding: 10px;
+            overflow: hidden;
+            border-radius: 5px;
+            background-color: var(--secondary-color);
+        }
+
+        .iframe-container .header {
+            width: 100%;
+            text-align: center;
+            font-size: 20px;
+            padding: 5px;
+            color: var(--text-color);
+        }
+    </style>
+    <script type="text/javascript">
+        let servers = [
+            // Will be added once battlemetrics pics it up
+            // {
+            //     link: "https://cdn.battlemetrics.com/b/horizontal500x80px/23901550.html?foreground=%23EEEEEE&background=%23222222&lines=%23333333&linkColor=%231185ec&chartColor=%23FF0700",
+            //     name: "EU",
+            //     id: "status-eu",
+            //     src: "./The Crew Sandstorm_files/23901550.html"
+            // },
+            {
+                link: "https://cdn.battlemetrics.com/b/horizontal500x80px/13024670.html?foreground=%23EEEEEE&background=%23222222&lines=%23333333&linkColor=%231185ec&chartColor=%23FF0700",
+                name: "US Cent",
+                id: "status-us-cent",
+                src: "./The Crew Sandstorm_files/13024670.html"
+            },
+            {
+                link: "https://cdn.battlemetrics.com/b/horizontal500x80px/23901550.html?foreground=%23EEEEEE&background=%23222222&lines=%23333333&linkColor=%231185ec&chartColor=%23FF0700",
+                name: "EU Old",
+                id: "status-eu-old",
+                src: "./The Crew Sandstorm_files/23901550.html"
+            }
+        ];
+
+        window.onload = function() {
+            let menuItems = document.getElementsByClassName("menu-item");
+            for (let i = 0; i < menuItems.length; i++) {
+                menuItems[i].addEventListener("click", function() {
+                    let activeItem = document.getElementsByClassName("menu-item-active")[0];
+                    activeItem.classList.remove("menu-item-active");
+                    this.classList.add("menu-item-active");
+                    let content = document.getElementById("content-" + this.innerHTML.toLowerCase());
+                    let activeContent = document.getElementsByClassName("content-active")[0];
+                    activeContent.classList.remove("content-active");
+                    content.classList.add("content-active");
+                });
+            }
+
+            for (let i = 0; i < servers.length; i++) {
+                let link = servers[i].link;
+                let id = servers[i].id;
+                document.getElementById(id).src = link + "&" + Math.random();
+                setInterval(function() {
+                    document.getElementById(id).src = link + "&" + Math.random();
+                }, 30000);
+            }
+
+            let codeViews = document.getElementsByClassName("codeview-head");
+            for (let i = 0; i < codeViews.length; i++) {
+                codeViews[i].addEventListener("click", function() {
+                    let parent = this.parentElement;
+                    if (parent.classList.contains("codeview-extended")) {
+                        parent.classList.remove("codeview-extended");
+                    } else {
+                        let codeViews = document.getElementsByClassName("codeview");
+                        for (let i = 0; i < codeViews.length; i++) {
+                            codeViews[i].classList.remove("codeview-extended");
+                        }
+                        parent.classList.add("codeview-extended");
+                    }
+                });
+            }
+        }
+    </script>
+    <title>The Crew Sandstorm</title>
+    <body>
+        <div class="segment menu">
+            <div class="menu-item menu-item-active">STATUS</div>
+            <div class="menu-item">CONFIGURATION</div>
+            <div class="menu-item">FEEDBACK</div>
+        </div>
+        <div class="segment content content-active" id="content-status">
+            <div class="content-sub">
+                <div class="iframe-container">
+                    <div class="header">New EU Server</div>
+                    <pre>
+                        <code>
+Hi!
+
+I moved the server again.
+Once battlemetrics picks it up, this box will be updated.
+
+Until then, these are the details.
+Same settings, same everything, just a new server.
+
+Name: [EU] The Crew PvE Checkpoint | Vanilla but a bit harder
+IP: 185.170.115.5
+Ports: 27102
+                        </code>
+                    </pre>
+                </div>
+            </div>
+            <script type="text/javascript">
+                document.write(
+                    servers.map(server => `
+                        <div class="content-sub">
+                            <div class="iframe-container">
+                                            <div class="header">${server.name}</div>
+                                            <iframe class="statusframe" id="${server.id}" src="${server.src}" frameborder="0" style="border:0" name="syfah"></iframe>
+                            </div>
+                        </div>
+                    `).join('')
+                );
+            </script>
+        </div>
+        <div class="segment content" id="content-configuration">
+            <div class="content-sub">
+                <div class="codeview">
+                    <div class="codeview-head">Insurgency/Saved/Config/LinuxServer/Game.ini</div>
+                    <div class="codeview-code">
+                        <pre>
+                            <code>
+[/Script/Insurgency.INSGameMode]
+TeamKillLimit=2
+bKillFeed=True
+bKillerInfoRevealDistance=True
+
+[/Script/Insurgency.INSMultiplayerMode]
+RoundLimit=4
+WinLimit=1
+
+[/Script/Insurgency.INSCoopMode]
+AIDifficulty=0.75
+bUseVehicleInsertion=True
+MinimumEnemies=7
+MaximumEnemies=35
+
+[/script/insurgency.inscheckpointgamemode]
+RoundTime=600
+                            </code>
+                        </pre>
+                    </div>
+                </div>
+            </div>
+            <div class="content-sub">
+                <div class="codeview">
+                    <div class="codeview-head">Insurgency/Config/Server/MapCycle.txt</div>
+                    <div class="codeview-code">
+                        <pre>
+                            <code>
+(Scenario="Scenario_Citadel_Checkpoint_Insurgents",Lighting="Day")
+(Scenario="Scenario_Citadel_Checkpoint_Security",Lighting="Day")
+(Scenario="Scenario_Crossing_Checkpoint_Insurgents",Lighting="Day")
+(Scenario="Scenario_Crossing_Checkpoint_Security",Lighting="Day")
+(Scenario="Scenario_Farmhouse_Checkpoint_Insurgents",Lighting="Day")
+(Scenario="Scenario_Farmhouse_Checkpoint_Security",Lighting="Day")
+(Scenario="Scenario_Hideout_Checkpoint_Insurgents",Lighting="Day")
+(Scenario="Scenario_Hideout_Checkpoint_Security",Lighting="Day")
+(Scenario="Scenario_Hillside_Checkpoint_Insurgents",Lighting="Day")
+(Scenario="Scenario_Hillside_Checkpoint_Security",Lighting="Day")
+(Scenario="Scenario_Ministry_Checkpoint_Insurgents",Lighting="Day")
+(Scenario="Scenario_Ministry_Checkpoint_Security",Lighting="Day")
+(Scenario="Scenario_Outskirts_Checkpoint_Insurgents",Lighting="Day")
+(Scenario="Scenario_Outskirts_Checkpoint_Security",Lighting="Day")
+(Scenario="Scenario_Precinct_Checkpoint_Insurgents",Lighting="Day")
+(Scenario="Scenario_Precinct_Checkpoint_Security",Lighting="Day")
+(Scenario="Scenario_Refinery_Checkpoint_Insurgents",Lighting="Day")
+(Scenario="Scenario_Refinery_Checkpoint_Security",Lighting="Day")
+(Scenario="Scenario_Summit_Checkpoint_Insurgents",Lighting="Day")
+(Scenario="Scenario_Summit_Checkpoint_Security",Lighting="Day")
+(Scenario="Scenario_PowerPlant_Checkpoint_Insurgents",Lighting="Day")
+(Scenario="Scenario_PowerPlant_Checkpoint_Security",Lighting="Day")
+(Scenario="Scenario_Tell_Checkpoint_Insurgents",Lighting="Day")
+(Scenario="Scenario_Tell_Checkpoint_Security",Lighting="Day")
+(Scenario="Scenario_Tideway_Checkpoint_Insurgents",Lighting="Day")
+(Scenario="Scenario_Tideway_Checkpoint_Security",Lighting="Day")
+(Scenario="Scenario_Bab_Checkpoint_Insurgents",Lighting="Day")
+(Scenario="Scenario_Bab_Checkpoint_Security",Lighting="Day")
+(Scenario="Scenario_Gap_Checkpoint_Insurgents",Lighting="Day")
+(Scenario="Scenario_Gap_Checkpoint_Security",Lighting="Day")
+(Scenario="Scenario_Prison_Checkpoint_Security",Lighting="Day")
+(Scenario="Scenario_Prison_Checkpoint_Insurgents",Lighting="Day")
+(Scenario="Scenario_LastLight_Checkpoint_Security",Lighting="Day")
+(Scenario="Scenario_LastLight_Checkpoint_Insurgents",Lighting="Day")
+(Scenario="Scenario_Trainyard_Checkpoint_Security",Lighting="Day")
+(Scenario="Scenario_Trainyard_Checkpoint_Insurgents",Lighting="Day")
+(Scenario="Scenario_Forest_Checkpoint_Security",Lighting="Day")
+(Scenario="Scenario_Forest_Checkpoint_Insurgents",Lighting="Day")
+                            </code>
+                        </pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="segment content" id="content-feedback">
+            <div class="content-sub">
+                <a href="mailto:sandstorm@crew-server.de?subject=The%20Crew%20Sandstorm%20Feedback/Contact&amp;body=Server%20(US/EU):%0D%0AMessage:%0D%0A%0D%0A">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="92" height="92" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-mail">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                    </svg>
+                </a>
+                <a href="https://discordapp.com/users/450641298295095296">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="92" height="92" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                </a>
+            </div>
+        </div>
+    </body>
+</html>
