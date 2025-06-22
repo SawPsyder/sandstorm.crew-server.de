@@ -182,12 +182,11 @@
         </style>
         <script type="text/javascript">
             let servers = [
-                // Will be added once battlemetrics pics it up
-                // {
-                //     name: "EU",
-                //     id: "status-eu-de",
-                //     src_id: "XXXXXXXXXX",
-                // },
+                {
+                    name: "EU",
+                    id: "status-eu-de",
+                    src_id: "34182835",
+                },
                 {
                     name: "US Cent",
                     id: "status-us-cent",
@@ -225,16 +224,18 @@
                     let iframe = document.getElementById(id);
                     let loadingElement = document.getElementById(id + "_loading");
                     if (loadingElement && iframe) {
+                        iframe.style.transition = "opacity 0.5s";
                         iframe.addEventListener("load", function () {
                             loadingElement.style.opacity = "0";
-                            iframe.style.transition = "opacity 0.5s";
                             iframe.style.opacity = "1";
                         });
-                    }
-                    iframe.src = "https://cdn.battlemetrics.com/b/horizontal500x80px/" + src_id + ".html?foreground=%23EEEEEE&background=%23222222&lines=%23333333&linkColor=%231185ec&chartColor=%23FF0700" + "&" + Math.random();
-                    setInterval(function() {
                         iframe.src = "https://cdn.battlemetrics.com/b/horizontal500x80px/" + src_id + ".html?foreground=%23EEEEEE&background=%23222222&lines=%23333333&linkColor=%231185ec&chartColor=%23FF0700" + "&" + Math.random();
-                    }, 30000);
+                        setInterval(function() {
+                            iframe.src = "https://cdn.battlemetrics.com/b/horizontal500x80px/" + src_id + ".html?foreground=%23EEEEEE&background=%23222222&lines=%23333333&linkColor=%231185ec&chartColor=%23FF0700" + "&" + Math.random();
+                            loadingElement.style.opacity = "1";
+                            iframe.style.opacity = "0";
+                        }, 30000);
+                    }
                 }
 
                 let codeViews = document.getElementsByClassName("codeview-head");
@@ -306,26 +307,6 @@
             <div class="menu-item" tabindex="0" role="button">FEEDBACK</div>
         </div>
         <div class="segment content content-active" id="content-status">
-            <div class="content-sub">
-                <div class="iframe-container" tabindex="0" role="button" title="Status of EU" aria-label="Status of EU">
-                    <div class="header">New EU Server</div>
-                    <pre>
-                        <code>
-Hi!
-
-I moved the server again.
-Once battlemetrics picks it up, this box will be updated.
-
-Until then, these are the details.
-Same settings, same everything, just a new server.
-
-Name: [EU] The Crew PvE Checkpoint | Vanilla but a bit harder
-IP: 185.170.115.5
-Ports: 27102
-                        </code>
-                    </pre>
-                </div>
-            </div>
             <script type="text/javascript">
                 document.write(
                     servers.map(server => `
