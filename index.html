@@ -189,6 +189,23 @@
                 color: var(--text-muted);
             }
 
+            .info-card {
+                max-width: 520px;
+                margin: 0 auto;
+                text-align: center;
+            }
+
+            .info-card p {
+                margin: 0;
+                color: var(--text-muted);
+                font-size: 0.92rem;
+                line-height: 1.6;
+            }
+
+            .info-card strong {
+                color: var(--text-color);
+            }
+
             .iframe-container {
                 position: relative;
                 cursor: pointer;
@@ -433,12 +450,70 @@
             const iframeQuery = "?foreground=%23F3F4F6&background=%23111119&lines=%23232A3A&linkColor=%236C9EFF&chartColor=%23FF5757";
             const refreshInterval = 30000;
 
+            enforceNoCookies();
+
             document.addEventListener("DOMContentLoaded", () => {
                 initMenu();
                 initServers();
                 initCodeViews();
                 trapTabFocus();
             });
+
+            function enforceNoCookies() {
+                const clearCookies = () => {
+                    const rawCookies = document.cookie;
+                    if (!rawCookies) return;
+
+                    const cookies = rawCookies.split(";");
+                    const expires = "expires=Thu, 01 Jan 1970 00:00:00 GMT";
+
+                    cookies.forEach((cookie) => {
+                        const eqIndex = cookie.indexOf("=");
+                        const name = eqIndex > -1 ? cookie.slice(0, eqIndex) : cookie;
+                        const trimmed = name.trim();
+                        if (!trimmed) return;
+
+                        document.cookie = `${trimmed}=;${expires};path=/;SameSite=Lax`;
+                        document.cookie = `${trimmed}=;${expires};path=/;domain=${location.hostname};SameSite=Lax`;
+                    });
+                };
+
+                clearCookies();
+
+                let cookiesLocked = false;
+
+                const lockCookieSetter = (target) => {
+                    if (!target || cookiesLocked) return;
+                    try {
+                        Object.defineProperty(target, "cookie", {
+                            configurable: false,
+                            enumerable: false,
+                            get() {
+                                return "";
+                            },
+                            set() {}
+                        });
+                        cookiesLocked = true;
+                    } catch (error) {
+                        // Swallow errors caused by non-configurable descriptors.
+                    }
+                };
+
+                lockCookieSetter(Object.getPrototypeOf(document));
+                lockCookieSetter(document);
+
+                if (!cookiesLocked && document.__defineGetter__) {
+                    document.__defineGetter__("cookie", () => "");
+                    document.__defineSetter__("cookie", () => {});
+                    cookiesLocked = true;
+                }
+
+                if (!cookiesLocked) {
+                    const cookieWatcher = () => clearCookies();
+                    cookieWatcher();
+                    setInterval(cookieWatcher, 5000);
+                }
+            }
 
             function initMenu() {
                 const menuItems = document.querySelectorAll(".menu-item");
@@ -717,6 +792,11 @@ RoundTime=600</code></pre>
                     </div>
                 </div>
             </section>
+            <footer class="segment" role="contentinfo">
+                <div class="card info-card">
+                    <p><strong>Privacy first:</strong> Diese Seite setzt keine Cookies und erfasst keine Nutzungsstatistiken.</p>
+                </div>
+            </footer>
         </main>
 
     </body>
