@@ -3,114 +3,321 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="color-scheme" content="dark">
         <title>The Crew Sandstorm</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
         <style>
             :root {
-                --primary-color: #19191a;
-                --secondary-color: #222222;
-                --text-color: #e7e7e7;
-                --text-trans-color: #fff0;
+                --page-bg: #080808;
+                --page-gradient: radial-gradient(circle at top, rgba(70, 76, 89, 0.25), transparent 55%),
+                    radial-gradient(circle at bottom, rgba(17, 102, 173, 0.15), transparent 60%),
+                    #050506;
+                --card-bg: rgba(22, 24, 29, 0.7);
+                --card-border: rgba(91, 134, 229, 0.15);
+                --accent: #6c9eff;
+                --accent-strong: #4a82ff;
+                --text-color: #f3f4f6;
+                --text-muted: rgba(229, 231, 235, 0.75);
+                --radius-lg: 22px;
+                --radius-md: 16px;
+                --radius-sm: 12px;
+                --shadow-lg: 0 32px 80px -32px rgba(13, 16, 24, 0.85);
+                --shadow-sm: 0 10px 30px -20px rgba(14, 18, 32, 0.95);
+                --transition-base: 220ms ease;
+                --max-width: min(960px, 92vw);
             }
 
-            html, body {
-                font-family: sans-serif;
-                background-color: var(--primary-color);
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                min-height: 100vh;
+                margin: 0;
+                font-family: "Inter", "Segoe UI", Roboto, sans-serif;
+                background: var(--page-gradient);
                 color: var(--text-color);
+                display: flex;
+                justify-content: center;
+                padding: 40px 0 120px;
                 overflow-x: hidden;
             }
 
+            a,
+            button {
+                font: inherit;
+                color: inherit;
+            }
+
             a {
-                background-color: var(--secondary-color);
-                border-radius: 5px;
-                margin: 0 10px 0 10px;
+                text-decoration: none;
             }
 
-            a svg {
-                padding: 7px 15px 0 15px;
-            }
-
-            .menu {
+            .page {
+                width: 100%;
+                max-width: var(--max-width);
                 display: flex;
-                justify-content: space-around;
-                align-items: center;
-                font-family: monospace;
-                height: 100px;
-            }
-
-            .menu-item {
-                font-size: 20px;
-                padding: 10px;
-                width: 200px;
-                margin: 20px;
-                text-align: center;
-                cursor: pointer;
-                border-radius: 5px;
-                transition-duration: .5s;
-                color: var(--text-color);
-            }
-
-            .menu-item:hover {
-                background-color: var(--secondary-color);
-            }
-
-            .menu-item-active {
-                background-color: var(--secondary-color);
+                flex-direction: column;
+                gap: 32px;
             }
 
             .segment {
                 display: flex;
                 justify-content: center;
-                align-items: center;
                 width: 100%;
+            }
+
+            .menu {
+                position: sticky;
+                top: 24px;
+                z-index: 10;
+                margin: 0 auto;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 18px;
+                padding: 14px 18px;
+                border-radius: var(--radius-lg);
+                background: linear-gradient(135deg, rgba(32, 35, 45, 0.85), rgba(22, 24, 30, 0.7));
+                box-shadow: var(--shadow-lg);
+                backdrop-filter: blur(16px);
+                border: 1px solid rgba(108, 158, 255, 0.14);
+            }
+
+            .menu-item {
+                position: relative;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 12px 24px;
+                border-radius: var(--radius-md);
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                font-weight: 600;
+                color: var(--text-muted);
+                cursor: pointer;
+                transition: background-color var(--transition-base), color var(--transition-base), transform var(--transition-base);
+            }
+
+            .menu-item::after {
+                content: "";
+                position: absolute;
+                inset: 0;
+                border-radius: inherit;
+                background: linear-gradient(120deg, rgba(108, 158, 255, 0.35), rgba(47, 61, 96, 0.4));
+                opacity: 0;
+                transition: opacity var(--transition-base);
+            }
+
+            .menu-item span {
+                position: relative;
+                z-index: 1;
+            }
+
+            .menu-item:hover,
+            .menu-item:focus-visible {
+                color: var(--text-color);
+                transform: translateY(-2px);
+            }
+
+            .menu-item:hover::after,
+            .menu-item:focus-visible::after {
+                opacity: 0.35;
+            }
+
+            .menu-item.menu-item-active {
+                color: var(--text-color);
+            }
+
+            .menu-item.menu-item-active::after {
+                opacity: 1;
             }
 
             .content {
                 display: none;
-                height: calc(100% - 100px);
-                flex-wrap: wrap;
-                align-content: center;
+                width: 100%;
+                margin: 0 auto;
             }
 
-            .content-sub {
-                width: 100%;
-                padding: 10px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
+            .content[hidden] {
+                display: none !important;
             }
 
             .content-active {
                 display: flex;
             }
 
-            .statusframe {
-                width: 500px;
-                height: 80px;
-            }
-
-            .codeview {
-                width: 600px;
-                background-color: var(--secondary-color);
-                border: none;
-                border-radius: 5px;
-                overflow: hidden;
-            }
-
-            .codeview:focus-within {
-                outline: 1px solid white;
-            }
-
-            .codeview-head {
+            .content-wrapper {
                 width: 100%;
-                height: 50px;
-                background-color: var(--secondary-color);
+                max-width: var(--max-width);
+                margin: 0 auto;
+                display: flex;
+                flex-direction: column;
+                gap: 22px;
+            }
+
+            .content-sub {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                text-align: left;
+            }
+
+            .card {
+                width: 100%;
+                max-width: var(--max-width);
+                padding: 24px;
+                border-radius: var(--radius-lg);
+                background: var(--card-bg);
+                border: 1px solid var(--card-border);
+                box-shadow: var(--shadow-sm);
+                backdrop-filter: blur(18px);
+                transition: transform var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base);
+            }
+
+            .card:hover,
+            .card:focus-within {
+                transform: translateY(-4px);
+                border-color: rgba(108, 158, 255, 0.38);
+                box-shadow: 0 18px 60px -32px rgba(35, 60, 120, 0.8);
+            }
+
+            .card p {
+                margin: 0 0 18px;
+                color: var(--text-muted);
+            }
+
+            .iframe-container {
+                position: relative;
+                cursor: pointer;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .iframe-container.card {
+                max-width: 640px;
+                margin: 0 auto;
+            }
+
+            .iframe-container .header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                font-size: 1.1rem;
+                font-weight: 600;
+                letter-spacing: 0.04em;
+                color: var(--text-color);
+            }
+
+            .iframe-container .header::after {
+                content: "↗";
+                font-size: 1rem;
+                color: var(--accent);
+                transition: transform var(--transition-base);
+            }
+
+            .iframe-container:hover .header::after,
+            .iframe-container:focus-visible .header::after {
+                transform: translate(4px, -4px);
+            }
+
+            .iframe-stage {
+                position: relative;
+                border-radius: var(--radius-md);
+                overflow: hidden;
+                padding: 14px;
+                background: linear-gradient(135deg, rgba(18, 22, 32, 0.85), rgba(12, 16, 24, 0.75));
+                box-shadow: inset 0 0 0 1px rgba(108, 158, 255, 0.12);
+                isolation: isolate;
+            }
+
+            .iframe-stage::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                border-radius: inherit;
+                background: radial-gradient(circle at top right, rgba(108, 158, 255, 0.22), transparent 55%);
+                z-index: -1;
+            }
+
+            .statusframe {
+                display: block;
+                width: 100%;
+                aspect-ratio: 500 / 110;
+                min-height: 110px;
                 border: none;
+                border-radius: calc(var(--radius-md) - 8px);
+                background: rgba(6, 8, 14, 0.6);
+                box-shadow: inset 0 0 0 1px rgba(108, 158, 255, 0.16);
+                filter: saturate(1.08) contrast(1.04);
+                transition: opacity var(--transition-base), filter var(--transition-base);
+            }
+
+            .iframe-container:hover .statusframe,
+            .iframe-container:focus-visible .statusframe {
+                filter: saturate(1.14) contrast(1.08);
+            }
+
+            .loading-indicator {
+                position: absolute;
+                inset: 0;
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                font-size: 20px;
-                color: var(--text-color);
+                gap: 12px;
+                color: var(--text-muted);
+                height: 100%;
+                opacity: 1;
+                backdrop-filter: blur(6px);
+                background: linear-gradient(135deg, rgba(5, 8, 14, 0.58), rgba(18, 24, 36, 0.58));
+                pointer-events: none;
+                transition: opacity var(--transition-base);
+            }
+
+            .spinner {
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+                border: 3px solid rgba(108, 158, 255, 0.12);
+                border-top-color: var(--accent);
+                animation: spin 1s linear infinite;
+            }
+
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
+            .codeview {
+                padding: 0;
+                overflow: hidden;
+            }
+
+            .codeview-head {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 16px;
+                padding: 20px 24px;
                 cursor: pointer;
+                font-size: 1rem;
+                font-weight: 500;
+                letter-spacing: 0.03em;
+                color: var(--text-color);
+            }
+
+            .codeview-head::after {
+                content: "";
+                width: 10px;
+                height: 10px;
+                border-right: 2px solid var(--accent);
+                border-bottom: 2px solid var(--accent);
+                transform: rotate(45deg);
+                transition: transform var(--transition-base);
             }
 
             .codeview-head:focus-visible {
@@ -118,213 +325,469 @@
             }
 
             .codeview-code {
-                width: calc(100% - 20px);
-                height: 0;
-                background-color: var(--secondary-color);
-                color: var(--text-trans-color);
-                padding: 0 10px 0 10px;
-                transition-duration: .5s;
+                max-height: 0;
                 overflow: hidden;
+                background: rgba(5, 8, 14, 0.75);
+                color: transparent;
+                transition: max-height 320ms ease, color var(--transition-base);
+                border-top: 1px solid rgba(108, 158, 255, 0.08);
             }
 
             .codeview-code pre {
-                width: 100%;
-                padding: 0;
                 margin: 0;
-                display: flex;
-                justify-content: center;
+                padding: 24px;
+                overflow-x: auto;
             }
 
             .codeview-code pre code {
-                font-family: monospace;
-                padding: 0;
-                margin: 0;
-                text-align: left;
+                font-family: "JetBrains Mono", "Fira Code", monospace;
+                font-size: 0.95rem;
+                line-height: 1.6;
+                white-space: pre-wrap;
             }
 
-            .codeview.codeview-extended .codeview-code{
-                height: auto;
+            .codeview.codeview-extended .codeview-code {
+                max-height: 420px;
                 color: var(--text-color);
+                overflow: auto;
             }
 
-            .iframe-container {
-                width: 500px;
-                padding: 10px;
-                overflow: hidden;
-                border-radius: 5px;
-                background-color: var(--secondary-color);
+            .codeview.codeview-extended .codeview-head::after {
+                transform: rotate(-135deg) translateY(2px);
             }
 
-            .iframe-container .header {
-                width: 100%;
-                text-align: center;
-                font-size: 20px;
-                padding: 5px;
-                color: var(--text-color);
+            .contact-links {
+                display: flex;
+                gap: 16px;
+                justify-content: center;
+                flex-wrap: wrap;
             }
 
-            #fancy-toast {
-                display: none;
+            .contact-links a {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 88px;
+                height: 88px;
+                border-radius: 24px;
+                background: rgba(16, 20, 30, 0.75);
+                box-shadow: inset 0 0 0 1px rgba(108, 158, 255, 0.1);
+                transition: transform var(--transition-base), box-shadow var(--transition-base), background var(--transition-base);
+            }
+
+            .contact-links a:hover,
+            .contact-links a:focus-visible {
+                transform: translateY(-4px) scale(1.02);
+                background: rgba(27, 33, 48, 0.9);
+                box-shadow: 0 18px 48px -32px rgba(64, 100, 180, 0.9);
+            }
+
+            .privacy-badge {
                 position: fixed;
-                left: 50%;
-                bottom: 40px;
-                transform: translateX(-50%);
-                background: var(--secondary-color);
-                padding: 20px 40px;
-                border-radius: 5px;
-                font-size: 1.2em;
-                z-index: 2;
-                opacity: 0;
-                transition: opacity 0.5s, bottom 0.5s;
-                border: none;
+                right: 28px;
+                bottom: 28px;
+                display: inline-flex;
+                align-items: flex-end;
+                justify-content: flex-end;
+                z-index: 50;
+            }
+
+            .privacy-trigger {
+                position: relative;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 52px;
+                height: 52px;
+                border-radius: 18px;
+                border: 1px solid rgba(108, 158, 255, 0.22);
+                background: rgba(16, 20, 30, 0.82);
+                box-shadow: 0 18px 48px -32px rgba(64, 100, 180, 0.9);
                 color: var(--text-color);
+                cursor: pointer;
+                transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+            }
+
+            .privacy-trigger:hover,
+            .privacy-trigger:focus-visible,
+            .privacy-badge:hover .privacy-trigger,
+            .privacy-badge:focus-within .privacy-trigger {
+                transform: translateY(-3px);
+                border-color: rgba(108, 158, 255, 0.38);
+                box-shadow: 0 24px 60px -32px rgba(64, 100, 180, 0.95);
+            }
+
+            .privacy-trigger:focus-visible {
+                outline: none;
+            }
+
+            .privacy-trigger span[aria-hidden="true"] {
+                font-size: 1.35rem;
+            }
+
+            .privacy-panel {
+                position: absolute;
+                right: 0;
+                bottom: 64px;
+                width: min(320px, calc(100vw - 48px));
+                padding: 18px 20px;
+                border-radius: var(--radius-md);
+                background: rgba(12, 16, 26, 0.94);
+                border: 1px solid rgba(108, 158, 255, 0.18);
+                box-shadow: var(--shadow-lg);
+                backdrop-filter: blur(18px);
+                color: var(--text-muted);
+                font-size: 0.9rem;
+                line-height: 1.6;
+                opacity: 0;
+                visibility: hidden;
+                transform: translateY(12px);
+                transition: opacity var(--transition-base), transform var(--transition-base), visibility var(--transition-base);
+            }
+
+            .privacy-panel strong {
+                color: var(--text-color);
+            }
+
+            .privacy-badge:hover .privacy-panel,
+            .privacy-badge:focus-within .privacy-panel {
+                opacity: 1;
+                visibility: visible;
+                transform: translateY(0);
+            }
+
+            .sr-only {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                padding: 0;
+                margin: -1px;
+                overflow: hidden;
+                clip: rect(0, 0, 0, 0);
+                white-space: nowrap;
+                border: 0;
+            }
+
+            svg {
+                width: 54px;
+                height: 54px;
+            }
+
+            @media (max-width: 720px) {
+                body {
+                    padding: 32px 0 160px;
+                }
+
+                .menu {
+                    flex-wrap: wrap;
+                    gap: 12px;
+                }
+
+                .menu-item {
+                    flex: 1 1 100%;
+                }
+
+                .codeview-code {
+                    max-height: 480px;
+                }
+
+                .card {
+                    padding: 18px;
+                }
+
+                .codeview-head {
+                    padding: 18px;
+                }
+
+                svg {
+                    width: 48px;
+                    height: 48px;
+                }
             }
         </style>
         <script type="text/javascript">
-            let servers = [
+            const servers = [
                 {
-                    name: "EU",
                     id: "status-eu-de",
-                    src_id: "34182835",
+                    srcId: "34182835",
+                    label: "Europa (EU)",
+                    ariaLabel: "Status Europa Server"
                 }
             ];
 
-            window.onload = function() {
-                let menuItems = document.getElementsByClassName("menu-item");
-                for (let i = 0; i < menuItems.length; i++) {
-                    menuItems[i].addEventListener("click", function() {
-                        let activeItem = document.getElementsByClassName("menu-item-active")[0];
-                        activeItem.classList.remove("menu-item-active");
-                        this.classList.add("menu-item-active");
-                        let content = document.getElementById("content-" + this.innerHTML.toLowerCase());
-                        let activeContent = document.getElementsByClassName("content-active")[0];
-                        activeContent.classList.remove("content-active");
-                        content.classList.add("content-active");
-                    });
-                    menuItems[i].addEventListener("keydown", function(e) {
-                        if (e.key === "Enter" || e.keyCode === 13) {
-                            this.click();
-                        }
-                    });
-                }
+            const battleMetricsBase = "https://cdn.battlemetrics.com/b/horizontal500x80px/";
+            const iframeQuery = "?foreground=%23F3F4F6&background=%23111119&lines=%23232A3A&linkColor=%236C9EFF&chartColor=%23FF5757";
+            const refreshInterval = 30000;
 
-                for (let i = 0; i < servers.length; i++) {
-                    let id = servers[i].id;
-                    let src_id = servers[i].src_id;
-                    let iframe = document.getElementById(id);
-                    let loadingElement = document.getElementById(id + "_loading");
-                    if (loadingElement && iframe) {
-                        iframe.style.transition = "opacity 0.5s";
-                        iframe.addEventListener("load", function () {
-                            loadingElement.style.opacity = "0";
-                            iframe.style.opacity = "1";
+            enforceNoCookies();
+
+            document.addEventListener("DOMContentLoaded", () => {
+                initMenu();
+                initServers();
+                initCodeViews();
+                initPrivacyBadge();
+                trapTabFocus();
+            });
+
+            function enforceNoCookies() {
+                const clearCookies = () => {
+                    const rawCookies = document.cookie;
+                    if (!rawCookies) return;
+
+                    const cookies = rawCookies.split(";");
+                    const expires = "expires=Thu, 01 Jan 1970 00:00:00 GMT";
+
+                    cookies.forEach((cookie) => {
+                        const eqIndex = cookie.indexOf("=");
+                        const name = eqIndex > -1 ? cookie.slice(0, eqIndex) : cookie;
+                        const trimmed = name.trim();
+                        if (!trimmed) return;
+
+                        document.cookie = `${trimmed}=;${expires};path=/;SameSite=Lax`;
+                        document.cookie = `${trimmed}=;${expires};path=/;domain=${location.hostname};SameSite=Lax`;
+                    });
+                };
+
+                clearCookies();
+
+                let cookiesLocked = false;
+
+                const lockCookieSetter = (target) => {
+                    if (!target || cookiesLocked) return;
+                    try {
+                        Object.defineProperty(target, "cookie", {
+                            configurable: false,
+                            enumerable: false,
+                            get() {
+                                return "";
+                            },
+                            set() {}
                         });
-                        iframe.src = "https://cdn.battlemetrics.com/b/horizontal500x80px/" + src_id + ".html?foreground=%23EEEEEE&background=%23222222&lines=%23333333&linkColor=%231185ec&chartColor=%23FF0700" + "&" + Math.random();
-                        setInterval(function() {
-                            iframe.src = "https://cdn.battlemetrics.com/b/horizontal500x80px/" + src_id + ".html?foreground=%23EEEEEE&background=%23222222&lines=%23333333&linkColor=%231185ec&chartColor=%23FF0700" + "&" + Math.random();
-                            loadingElement.style.opacity = "1";
-                            iframe.style.opacity = "0";
-                        }, 30000);
+                        cookiesLocked = true;
+                    } catch (error) {
+                        // Swallow errors caused by non-configurable descriptors.
                     }
+                };
+
+                lockCookieSetter(Object.getPrototypeOf(document));
+                lockCookieSetter(document);
+
+                if (!cookiesLocked && document.__defineGetter__) {
+                    document.__defineGetter__("cookie", () => "");
+                    document.__defineSetter__("cookie", () => {});
+                    cookiesLocked = true;
                 }
 
-                let codeViews = document.getElementsByClassName("codeview-head");
-                for (let i = 0; i < codeViews.length; i++) {
-                    codeViews[i].addEventListener("click", function() {
-                        let parent = this.parentElement;
-                        if (parent.classList.contains("codeview-extended")) {
-                            parent.classList.remove("codeview-extended");
-                        } else {
-                            let codeViews = document.getElementsByClassName("codeview");
-                            for (let i = 0; i < codeViews.length; i++) {
-                                codeViews[i].classList.remove("codeview-extended");
+                if (!cookiesLocked) {
+                    const cookieWatcher = () => clearCookies();
+                    cookieWatcher();
+                    setInterval(cookieWatcher, 5000);
+                }
+            }
+
+            function initMenu() {
+                const menuItems = document.querySelectorAll(".menu-item");
+                const sections = document.querySelectorAll(".content");
+
+                menuItems.forEach((item) => {
+                    item.addEventListener("click", () => switchSection(item.dataset.target));
+                    item.addEventListener("keydown", (event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            item.click();
+                        }
+                    });
+                });
+
+                function switchSection(target) {
+                    menuItems.forEach((el) => {
+                        const isActive = el.dataset.target === target;
+                        el.classList.toggle("menu-item-active", isActive);
+                        el.setAttribute("aria-selected", String(isActive));
+                    });
+
+                    sections.forEach((section) => {
+                        const isTarget = section.id === `content-${target}`;
+                        section.classList.toggle("content-active", isTarget);
+                        section.toggleAttribute("hidden", !isTarget);
+                        section.setAttribute("aria-hidden", String(!isTarget));
+                    });
+                }
+            }
+
+            function initServers() {
+                const container = document.getElementById("status-container");
+                if (!container) return;
+
+                servers.forEach((server) => {
+                    const { id, srcId, label, ariaLabel } = server;
+                    const wrapper = document.createElement("div");
+                    wrapper.className = "content-sub";
+
+                    const card = document.createElement("div");
+                    card.className = "iframe-container card";
+                    card.setAttribute("tabindex", "0");
+                    card.setAttribute("role", "button");
+                    card.setAttribute("aria-label", ariaLabel || label);
+
+                    const header = document.createElement("div");
+                    header.className = "header";
+                    header.textContent = label;
+
+                    const iframe = document.createElement("iframe");
+                    iframe.className = "statusframe";
+                    iframe.id = id;
+                    iframe.setAttribute("title", `BattleMetrics Status ${label}`);
+                    iframe.setAttribute("tabindex", "-1");
+                    iframe.style.opacity = "0";
+
+                    const loading = document.createElement("div");
+                    loading.id = `${id}_loading`;
+                    loading.className = "loading-indicator";
+                    loading.innerHTML = '<span class="spinner" aria-hidden="true"></span><span>Aktualisiere Serverdaten…</span>';
+
+                    const stage = document.createElement("div");
+                    stage.className = "iframe-stage";
+                    stage.append(iframe, loading);
+
+                    card.append(header, stage);
+                    wrapper.append(card);
+                    container.append(wrapper);
+
+                    const openServerDetails = () => {
+                        window.open(`https://www.battlemetrics.com/servers/sandstorm/${srcId}`, "_blank");
+                    };
+
+                    card.addEventListener("click", openServerDetails);
+                    card.addEventListener("keydown", (event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            openServerDetails();
+                        }
+                    });
+
+                    hydrateIframe(iframe, loading, srcId);
+                });
+            }
+
+            function hydrateIframe(iframe, loadingElement, srcId) {
+                if (!iframe || !loadingElement) return;
+
+                iframe.style.transition = "opacity 0.45s ease";
+                const load = () => {
+                    iframe.src = `${battleMetricsBase}${srcId}.html${iframeQuery}&${Math.random()}`;
+                };
+
+                iframe.addEventListener("load", () => {
+                    loadingElement.style.opacity = "0";
+                    iframe.style.opacity = "1";
+                });
+
+                load();
+                setInterval(() => {
+                    loadingElement.style.opacity = "1";
+                    iframe.style.opacity = "0";
+                    load();
+                }, refreshInterval);
+            }
+
+            function initCodeViews() {
+                const codeViews = Array.from(document.querySelectorAll(".codeview"));
+                codeViews.forEach((codeView) => {
+                    const trigger = codeView.querySelector(".codeview-head");
+                    if (!trigger) return;
+
+                    const toggle = () => toggleCodeView(codeView, trigger, codeViews);
+
+                    trigger.addEventListener("click", toggle);
+                    trigger.addEventListener("keydown", (event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            toggle();
+                        }
+                    });
+                });
+            }
+
+            function toggleCodeView(codeView, trigger, allCodeViews) {
+                const isExpanded = codeView.classList.toggle("codeview-extended");
+                trigger.setAttribute("aria-expanded", String(isExpanded));
+
+                if (isExpanded) {
+                    allCodeViews.forEach((view) => {
+                        if (view !== codeView) {
+                            view.classList.remove("codeview-extended");
+                            const head = view.querySelector(".codeview-head");
+                            if (head) {
+                                head.setAttribute("aria-expanded", "false");
                             }
-                            parent.classList.add("codeview-extended");
-                        }
-                    });
-                    codeViews[i].addEventListener("keydown", function(e) {
-                        if (e.key === "Enter" || e.keyCode === 13) {
-                            this.click();
                         }
                     });
                 }
+            }
 
-                let iframeContainers = document.getElementsByClassName("iframe-container");
-                for (let i = 0; i < iframeContainers.length; i++) {
-                    iframeContainers[i].addEventListener("keydown", function(e) {
-                        if (e.key === "Enter" || e.keyCode === 13) {
-                            this.click();
-                        }
-                    });
-                }
+            function trapTabFocus() {
+                document.addEventListener("keydown", (event) => {
+                    if (event.key !== "Tab") return;
 
-                document.addEventListener('keydown', function(e) {
-                    if (e.key !== "Tab") return;
-                    const focusables = Array.from(document.querySelectorAll('[tabindex="0"]:not([disabled])')).filter(el => el.offsetParent !== null);
+                    const focusables = Array.from(
+                        document.querySelectorAll(
+                            'a[href], button:not([disabled]), [tabindex="0"], [role="button"]:not([aria-disabled="true"])'
+                        )
+                    ).filter((element) => element.offsetParent !== null);
+
                     if (focusables.length === 0) return;
+
                     const first = focusables[0];
                     const last = focusables[focusables.length - 1];
-                    if (!e.shiftKey && document.activeElement === last) {
-                        e.preventDefault();
+
+                    if (!event.shiftKey && document.activeElement === last) {
+                        event.preventDefault();
                         first.focus();
-                    } else if (e.shiftKey && document.activeElement === first) {
-                        e.preventDefault();
+                    } else if (event.shiftKey && document.activeElement === first) {
+                        event.preventDefault();
                         last.focus();
                     }
                 });
+            }
 
-                const btn = document.getElementById('fancy-toast-btn');
-                const toast = document.getElementById('fancy-toast');
-                btn.onclick = function() {
-                    toast.style.display = 'block';
-                    setTimeout(() => {
-                        toast.style.opacity = '1';
-                        toast.style.bottom = '60px';
-                    }, 10);
-                    setTimeout(() => {
-                        toast.style.opacity = '0';
-                        toast.style.bottom = '40px';
-                        setTimeout(() => { toast.style.display = 'none'; }, 500);
-                    }, 6000);
+            function initPrivacyBadge() {
+                const badge = document.querySelector(".privacy-badge");
+                if (!badge) return;
+
+                const trigger = badge.querySelector(".privacy-trigger");
+                if (!trigger) return;
+
+                const setExpanded = (state) => {
+                    trigger.setAttribute("aria-expanded", state ? "true" : "false");
                 };
+
+                badge.addEventListener("mouseenter", () => setExpanded(true));
+                badge.addEventListener("mouseleave", () => setExpanded(false));
+                trigger.addEventListener("focus", () => setExpanded(true));
+                trigger.addEventListener("blur", () => setExpanded(false));
             }
         </script>
     </head>
     <body>
-        <div class="segment menu">
-            <div class="menu-item menu-item-active" tabindex="0" role="button" aria-current="page">STATUS</div>
-            <div class="menu-item" tabindex="0" role="button">CONFIGURATION</div>
-            <div class="menu-item" tabindex="0" role="button">FEEDBACK</div>
-        </div>
-        <div class="segment content content-active" id="content-status">
-            <script type="text/javascript">
-                document.write(
-                    servers.map(server => `
-                        <div class="content-sub">
-                            <div class="iframe-container" tabindex="0" role="button" onclick="window.open('https://www.battlemetrics.com/servers/sandstorm/${server.src_id}', '_blank')" title="Status of ${server.name}" aria-label="Status of ${server.name}">
-                                <div class="header">${server.name}</div>
-                                <div id="${server.id}_loading" style="display:flex;justify-content:center;align-items:center;height:40px;margin-top:15px;margin-bottom:-55px;opacity: 1;">
-                                    <svg width="32" height="32" viewBox="0 0 50 50" aria-label="Ladebalken" role="img">
-                                        <circle cx="25" cy="25" r="20" fill="none" stroke="#e7e7e7" stroke-width="5" stroke-linecap="round" stroke-dasharray="31.4 31.4" transform="rotate(-90 25 25)">
-                                            <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="1s" repeatCount="indefinite"/>
-                                        </circle>
-                                    </svg>
-                                </div>
-                                <iframe class="statusframe" id="${server.id}" src="" style="border:0; opacity: 0;" tabindex="-1"></iframe>
-                            </div>
-                        </div>
-                    `).join('')
-                );
-            </script>
-        </div>
-        <div class="segment content" id="content-configuration">
-            <div class="content-sub">
-                <div class="codeview">
-                    <div class="codeview-head" tabindex="0" role="button" aria-expanded="false">Insurgency/Saved/Config/LinuxServer/Game.ini</div>
-                    <div class="codeview-code">
-                        <pre>
-                            <code>
-[/Script/Insurgency.INSGameMode]
+        <main class="page">
+            <header class="segment menu" role="tablist" aria-label="Navigationsmenü">
+                <div class="menu-item menu-item-active" tabindex="0" role="tab" data-target="status" aria-selected="true" aria-controls="content-status"><span>STATUS</span></div>
+                <div class="menu-item" tabindex="0" role="tab" data-target="configuration" aria-selected="false" aria-controls="content-configuration"><span>CONFIGURATION</span></div>
+                <div class="menu-item" tabindex="0" role="tab" data-target="feedback" aria-selected="false" aria-controls="content-feedback"><span>FEEDBACK</span></div>
+            </header>
+
+            <section class="segment content content-active" id="content-status" role="tabpanel" aria-label="Serverstatus" aria-hidden="false">
+                <div class="content-wrapper" id="status-container"></div>
+            </section>
+
+            <section class="segment content" id="content-configuration" role="tabpanel" aria-label="Serverkonfiguration" aria-hidden="true" hidden>
+                <div class="content-wrapper">
+                    <div class="content-sub">
+                        <div class="codeview card">
+                            <div class="codeview-head" tabindex="0" role="button" aria-expanded="false">Insurgency/Saved/Config/LinuxServer/Game.ini</div>
+                            <div class="codeview-code">
+                                <pre><code>[/Script/Insurgency.INSGameMode]
 TeamKillLimit=2
 bKillFeed=True
 bKillerInfoRevealDistance=True
@@ -340,19 +803,15 @@ MinimumEnemies=7
 MaximumEnemies=35
 
 [/script/insurgency.inscheckpointgamemode]
-RoundTime=600
-                            </code>
-                        </pre>
+RoundTime=600</code></pre>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-            <div class="content-sub">
-                <div class="codeview">
-                    <div class="codeview-head" tabindex="0" role="button" aria-expanded="false">Insurgency/Config/Server/MapCycle.txt</div>
-                    <div class="codeview-code">
-                        <pre>
-                            <code>
-(Scenario="Scenario_Citadel_Checkpoint_Insurgents",Lighting="Day")
+                    <div class="content-sub">
+                        <div class="codeview card">
+                            <div class="codeview-head" tabindex="0" role="button" aria-expanded="false">Insurgency/Config/Server/MapCycle.txt</div>
+                            <div class="codeview-code">
+                                <pre><code>(Scenario="Scenario_Citadel_Checkpoint_Insurgents",Lighting="Day")
 (Scenario="Scenario_Citadel_Checkpoint_Security",Lighting="Day")
 (Scenario="Scenario_Crossing_Checkpoint_Insurgents",Lighting="Day")
 (Scenario="Scenario_Crossing_Checkpoint_Security",Lighting="Day")
@@ -389,37 +848,55 @@ RoundTime=600
 (Scenario="Scenario_Trainyard_Checkpoint_Security",Lighting="Day")
 (Scenario="Scenario_Trainyard_Checkpoint_Insurgents",Lighting="Day")
 (Scenario="Scenario_Forest_Checkpoint_Security",Lighting="Day")
-(Scenario="Scenario_Forest_Checkpoint_Insurgents",Lighting="Day")
-                            </code>
-                        </pre>
+(Scenario="Scenario_Forest_Checkpoint_Insurgents",Lighting="Day")</code></pre>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div style="text-align:center; margin-top:30px;">
-                <button id="fancy-toast-btn" style="background:none;border:none;cursor:pointer;">
-                    <span style="font-size:2em;">🥚</span>
-                </button>
-                <div id="fancy-toast">
-                    If you are interested in hosting your own server or have setting recommendations, feel free to reach out!
+            </section>
+
+            <section class="segment content" id="content-feedback" role="tabpanel" aria-label="Kontakt" aria-hidden="true" hidden>
+                <div class="content-wrapper">
+                    <div class="content-sub">
+                        <div class="card">
+                            <p>Reach out to share feedback or collaborate with the crew.</p>
+                            <div class="contact-links">
+                                <a href="mailto:sandstorm@crew-server.de?subject=The%20Crew%20Sandstorm%20Feedback/Contact&amp;body=Server%20(EU):%0D%0AMessage:%0D%0A%0D%0A" aria-label="E-Mail senden" tabindex="0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-mail" role="img" aria-label="E-Mail Symbol">
+                                        <title>E-Mail</title>
+                                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                        <polyline points="22,6 12,13 2,6"></polyline>
+                                    </svg>
+                                </a>
+                                <a href="https://discordapp.com/users/450641298295095296" aria-label="Discord Kontakt" tabindex="0" target="_blank" rel="noopener noreferrer">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle" role="img" aria-label="Discord Symbol">
+                                        <title>Discord</title>
+                                        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+            </section>
+        </main>
+        <div class="privacy-badge">
+            <button
+                type="button"
+                class="privacy-trigger"
+                aria-expanded="false"
+                aria-describedby="privacy-note"
+                aria-label="Privacy information"
+            >
+                <span class="sr-only">
+                    Privacy information: This site stores no cookies and records no analytics or usage statistics.
+                </span>
+                <span aria-hidden="true">🛡️</span>
+            </button>
+            <div class="privacy-panel" id="privacy-note" role="note">
+                <strong>Privacy first.</strong> This site stores no cookies and records no analytics or usage statistics.
             </div>
         </div>
-        <div class="segment content" id="content-feedback">
-            <div class="content-sub">
-                <a href="mailto:sandstorm@crew-server.de?subject=The%20Crew%20Sandstorm%20Feedback/Contact&amp;body=Server%20(EU):%0D%0AMessage:%0D%0A%0D%0A" aria-label="E-Mail senden" tabindex="0">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="92" height="92" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-mail" role="img" aria-label="E-Mail Symbol">
-                        <title>E-Mail</title>
-                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                        <polyline points="22,6 12,13 2,6"></polyline>
-                    </svg>
-                </a>
-                <a href="https://discordapp.com/users/450641298295095296" aria-label="Discord Kontakt" tabindex="0" target="_blank" rel="noopener noreferrer">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="92" height="92" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle" role="img" aria-label="Discord Symbol">
-                        <title>Discord</title>
-                        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-                    </svg>
-                </a>
-            </div>
-        </div>
+
     </body>
 </html>
