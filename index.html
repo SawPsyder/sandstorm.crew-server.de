@@ -308,6 +308,9 @@
                 font-weight: 500;
                 letter-spacing: 0.03em;
                 color: var(--text-color);
+                text-align: left;
+                white-space: normal;
+                overflow-wrap: anywhere;
             }
 
             .codeview-head::after {
@@ -411,7 +414,8 @@
             .privacy-trigger:hover,
             .privacy-trigger:focus-visible,
             .privacy-badge:hover .privacy-trigger,
-            .privacy-badge:focus-within .privacy-trigger {
+            .privacy-badge:focus-within .privacy-trigger,
+            .privacy-badge.privacy-badge-active .privacy-trigger {
                 transform: translateY(-3px);
                 border-color: rgba(108, 158, 255, 0.38);
                 box-shadow: 0 24px 60px -32px rgba(64, 100, 180, 0.95);
@@ -450,7 +454,8 @@
             }
 
             .privacy-badge:hover .privacy-panel,
-            .privacy-badge:focus-within .privacy-panel {
+            .privacy-badge:focus-within .privacy-panel,
+            .privacy-badge.privacy-badge-active .privacy-panel {
                 opacity: 1;
                 visibility: visible;
                 transform: translateY(0);
@@ -760,12 +765,30 @@
 
                 const setExpanded = (state) => {
                     trigger.setAttribute("aria-expanded", state ? "true" : "false");
+                    badge.classList.toggle("privacy-badge-active", Boolean(state));
                 };
 
-                badge.addEventListener("mouseenter", () => setExpanded(true));
-                badge.addEventListener("mouseleave", () => setExpanded(false));
-                trigger.addEventListener("focus", () => setExpanded(true));
-                trigger.addEventListener("blur", () => setExpanded(false));
+                const open = () => setExpanded(true);
+                const close = () => setExpanded(false);
+
+                badge.addEventListener("mouseenter", open);
+                badge.addEventListener("mouseleave", close);
+                trigger.addEventListener("focus", open);
+                badge.addEventListener("focusout", (event) => {
+                    if (!badge.contains(event.relatedTarget)) {
+                        close();
+                    }
+                });
+                trigger.addEventListener("click", (event) => {
+                    event.preventDefault();
+                    const nextState = trigger.getAttribute("aria-expanded") !== "true";
+                    setExpanded(nextState);
+                });
+                document.addEventListener("pointerdown", (event) => {
+                    if (!badge.contains(event.target)) {
+                        close();
+                    }
+                });
             }
         </script>
     </head>
