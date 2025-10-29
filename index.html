@@ -763,37 +763,22 @@
                 const trigger = badge.querySelector(".privacy-trigger");
                 if (!trigger) return;
 
+                let expanded = false;
+
                 const setExpanded = (state) => {
-                    trigger.setAttribute("aria-expanded", state ? "true" : "false");
-                    badge.classList.toggle("privacy-badge-active", Boolean(state));
+                    expanded = Boolean(state);
+                    trigger.setAttribute("aria-expanded", expanded ? "true" : "false");
+                    badge.classList.toggle("privacy-badge-active", expanded);
                 };
 
                 const open = () => setExpanded(true);
                 const close = () => setExpanded(false);
 
-                badge.addEventListener("pointerenter", (event) => {
-                    if (event.pointerType === "touch") return;
-                    open();
-                });
-                badge.addEventListener("pointerleave", (event) => {
-                    if (event.pointerType === "touch") return;
-                    close();
-                });
-                if (window.matchMedia && window.matchMedia("(hover: hover)").matches) {
-                    badge.addEventListener("mouseenter", open);
-                    badge.addEventListener("mouseleave", close);
-                }
-                trigger.addEventListener("focus", open);
-                badge.addEventListener("focusout", (event) => {
-                    if (!badge.contains(event.relatedTarget)) {
-                        close();
-                    }
-                });
                 trigger.addEventListener("click", (event) => {
                     event.preventDefault();
-                    const nextState = trigger.getAttribute("aria-expanded") !== "true";
-                    setExpanded(nextState);
+                    setExpanded(!expanded);
                 });
+
                 trigger.addEventListener("keydown", (event) => {
                     if (event.key === "Escape") {
                         event.stopPropagation();
@@ -801,6 +786,15 @@
                         trigger.blur();
                     }
                 });
+
+                badge.addEventListener("focusin", open);
+
+                badge.addEventListener("focusout", (event) => {
+                    if (!badge.contains(event.relatedTarget)) {
+                        close();
+                    }
+                });
+
                 document.addEventListener("pointerdown", (event) => {
                     if (!badge.contains(event.target)) {
                         close();
