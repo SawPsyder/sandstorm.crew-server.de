@@ -771,8 +771,18 @@
                 const open = () => setExpanded(true);
                 const close = () => setExpanded(false);
 
-                badge.addEventListener("mouseenter", open);
-                badge.addEventListener("mouseleave", close);
+                badge.addEventListener("pointerenter", (event) => {
+                    if (event.pointerType === "touch") return;
+                    open();
+                });
+                badge.addEventListener("pointerleave", (event) => {
+                    if (event.pointerType === "touch") return;
+                    close();
+                });
+                if (window.matchMedia && window.matchMedia("(hover: hover)").matches) {
+                    badge.addEventListener("mouseenter", open);
+                    badge.addEventListener("mouseleave", close);
+                }
                 trigger.addEventListener("focus", open);
                 badge.addEventListener("focusout", (event) => {
                     if (!badge.contains(event.relatedTarget)) {
@@ -783,6 +793,13 @@
                     event.preventDefault();
                     const nextState = trigger.getAttribute("aria-expanded") !== "true";
                     setExpanded(nextState);
+                });
+                trigger.addEventListener("keydown", (event) => {
+                    if (event.key === "Escape") {
+                        event.stopPropagation();
+                        close();
+                        trigger.blur();
+                    }
                 });
                 document.addEventListener("pointerdown", (event) => {
                     if (!badge.contains(event.target)) {
