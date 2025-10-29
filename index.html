@@ -165,10 +165,6 @@
                 text-align: left;
             }
 
-            .content-sub--centered {
-                justify-content: center;
-            }
-
             .card {
                 width: 100%;
                 max-width: var(--max-width);
@@ -353,6 +349,7 @@
             .codeview.codeview-extended .codeview-code {
                 max-height: 420px;
                 color: var(--text-color);
+                overflow: auto;
             }
 
             .codeview.codeview-extended .codeview-head::after {
@@ -383,44 +380,6 @@
                 transform: translateY(-4px) scale(1.02);
                 background: rgba(27, 33, 48, 0.9);
                 box-shadow: 0 18px 48px -32px rgba(64, 100, 180, 0.9);
-            }
-
-            .ghost-button {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                gap: 10px;
-                padding: 12px 22px;
-                border-radius: var(--radius-md);
-                background: rgba(108, 158, 255, 0.12);
-                color: var(--text-color);
-                border: 1px solid rgba(108, 158, 255, 0.25);
-                cursor: pointer;
-                transition: background var(--transition-base), transform var(--transition-base), border-color var(--transition-base);
-            }
-
-            .ghost-button:hover,
-            .ghost-button:focus-visible {
-                background: rgba(108, 158, 255, 0.24);
-                transform: translateY(-2px);
-                border-color: rgba(108, 158, 255, 0.45);
-            }
-
-            #fancy-toast {
-                display: none;
-                position: fixed;
-                left: 50%;
-                bottom: 40px;
-                transform: translateX(-50%);
-                padding: 18px 32px;
-                border-radius: var(--radius-lg);
-                background: rgba(22, 26, 35, 0.88);
-                border: 1px solid rgba(108, 158, 255, 0.2);
-                box-shadow: 0 16px 50px -30px rgba(45, 78, 150, 0.8);
-                font-size: 1rem;
-                z-index: 40;
-                opacity: 0;
-                transition: opacity 0.4s ease, bottom 0.4s ease;
             }
 
             svg {
@@ -463,23 +422,21 @@
         <script type="text/javascript">
             const servers = [
                 {
-                    name: "EU",
                     id: "status-eu-de",
                     srcId: "34182835",
-                    regionLabel: "Europa"
+                    label: "Europa (EU)",
+                    ariaLabel: "Status Europa Server"
                 }
             ];
 
             const battleMetricsBase = "https://cdn.battlemetrics.com/b/horizontal500x80px/";
             const iframeQuery = "?foreground=%23F3F4F6&background=%23111119&lines=%23232A3A&linkColor=%236C9EFF&chartColor=%23FF5757";
             const refreshInterval = 30000;
-            let toastHideTimer;
 
             document.addEventListener("DOMContentLoaded", () => {
                 initMenu();
                 initServers();
                 initCodeViews();
-                initToast();
                 trapTabFocus();
             });
 
@@ -518,6 +475,7 @@
                 if (!container) return;
 
                 servers.forEach((server) => {
+                    const { id, srcId, label, ariaLabel } = server;
                     const wrapper = document.createElement("div");
                     wrapper.className = "content-sub";
 
@@ -525,21 +483,21 @@
                     card.className = "iframe-container card";
                     card.setAttribute("tabindex", "0");
                     card.setAttribute("role", "button");
-                    card.setAttribute("aria-label", `Status ${server.name}`);
+                    card.setAttribute("aria-label", ariaLabel || label);
 
                     const header = document.createElement("div");
                     header.className = "header";
-                    header.innerHTML = `<span>${server.name}</span><span>${server.regionLabel}</span>`;
+                    header.textContent = label;
 
                     const iframe = document.createElement("iframe");
                     iframe.className = "statusframe";
-                    iframe.id = server.id;
-                    iframe.setAttribute("title", `BattleMetrics Status ${server.name}`);
+                    iframe.id = id;
+                    iframe.setAttribute("title", `BattleMetrics Status ${label}`);
                     iframe.setAttribute("tabindex", "-1");
                     iframe.style.opacity = "0";
 
                     const loading = document.createElement("div");
-                    loading.id = `${server.id}_loading`;
+                    loading.id = `${id}_loading`;
                     loading.className = "loading-indicator";
                     loading.innerHTML = '<span class="spinner" aria-hidden="true"></span><span>Aktualisiere Serverdaten…</span>';
 
@@ -552,7 +510,7 @@
                     container.append(wrapper);
 
                     const openServerDetails = () => {
-                        window.open(`https://www.battlemetrics.com/servers/sandstorm/${server.srcId}`, "_blank");
+                        window.open(`https://www.battlemetrics.com/servers/sandstorm/${srcId}`, "_blank");
                     };
 
                     card.addEventListener("click", openServerDetails);
@@ -563,7 +521,7 @@
                         }
                     });
 
-                    hydrateIframe(iframe, loading, server.srcId);
+                    hydrateIframe(iframe, loading, srcId);
                 });
             }
 
@@ -589,27 +547,29 @@
             }
 
             function initCodeViews() {
-                const codeViews = document.querySelectorAll(".codeview");
+                const codeViews = Array.from(document.querySelectorAll(".codeview"));
                 codeViews.forEach((codeView) => {
                     const trigger = codeView.querySelector(".codeview-head");
                     if (!trigger) return;
 
-                    trigger.addEventListener("click", () => toggleCodeView(codeView, trigger));
+                    const toggle = () => toggleCodeView(codeView, trigger, codeViews);
+
+                    trigger.addEventListener("click", toggle);
                     trigger.addEventListener("keydown", (event) => {
                         if (event.key === "Enter" || event.key === " ") {
                             event.preventDefault();
-                            toggleCodeView(codeView, trigger);
+                            toggle();
                         }
                     });
                 });
             }
 
-            function toggleCodeView(codeView, trigger) {
+            function toggleCodeView(codeView, trigger, allCodeViews) {
                 const isExpanded = codeView.classList.toggle("codeview-extended");
                 trigger.setAttribute("aria-expanded", String(isExpanded));
 
                 if (isExpanded) {
-                    document.querySelectorAll(".codeview").forEach((view) => {
+                    allCodeViews.forEach((view) => {
                         if (view !== codeView) {
                             view.classList.remove("codeview-extended");
                             const head = view.querySelector(".codeview-head");
@@ -619,41 +579,6 @@
                         }
                     });
                 }
-            }
-
-            function initToast() {
-                const button = document.getElementById("fancy-toast-btn");
-                const toast = document.getElementById("fancy-toast");
-                if (!button || !toast) return;
-
-                button.addEventListener("click", () => toggleToast(toast, button));
-                button.addEventListener("keydown", (event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        toggleToast(toast, button);
-                    }
-                });
-            }
-
-            function toggleToast(toast, button) {
-                toast.style.display = "block";
-                button.setAttribute("aria-expanded", "true");
-                if (toastHideTimer) {
-                    clearTimeout(toastHideTimer);
-                }
-                requestAnimationFrame(() => {
-                    toast.style.opacity = "1";
-                    toast.style.bottom = "62px";
-                });
-
-                toastHideTimer = setTimeout(() => {
-                    toast.style.opacity = "0";
-                    toast.style.bottom = "40px";
-                    setTimeout(() => {
-                        toast.style.display = "none";
-                        button.setAttribute("aria-expanded", "false");
-                    }, 400);
-                }, 6000);
             }
 
             function trapTabFocus() {
@@ -765,12 +690,6 @@ RoundTime=600</code></pre>
                             </div>
                         </div>
                     </div>
-                    <div class="content-sub content-sub--centered">
-                        <button id="fancy-toast-btn" class="ghost-button" type="button" aria-controls="fancy-toast" aria-expanded="false">
-                            <span aria-hidden="true">🥚</span>
-                            <span>Tap for a little secret</span>
-                        </button>
-                    </div>
                 </div>
             </section>
 
@@ -800,8 +719,5 @@ RoundTime=600</code></pre>
             </section>
         </main>
 
-        <div id="fancy-toast" role="status" aria-live="polite">
-            If you are interested in hosting your own server or have setting recommendations, feel free to reach out!
-        </div>
     </body>
 </html>
