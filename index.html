@@ -26,7 +26,7 @@
                 --shadow-lg: 0 32px 80px -32px rgba(13, 16, 24, 0.85);
                 --shadow-sm: 0 10px 30px -20px rgba(14, 18, 32, 0.95);
                 --transition-base: 220ms ease;
-                --max-width: min(960px, 92vw);
+                --max-width: min(1100px, 94vw);
             }
 
             * {
@@ -149,6 +149,10 @@
                 display: flex;
             }
 
+            #content-status.content-active {
+                display: block;
+            }
+
             .content-wrapper {
                 width: 100%;
                 max-width: var(--max-width);
@@ -189,87 +193,33 @@
                 color: var(--text-muted);
             }
 
-            .iframe-container {
+            .status-embed {
                 position: relative;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
-            }
-
-            .iframe-container.card {
-                /* 640px widget + card/stage padding, plus slack so the embed
-                   never has to render its own scrollbars. */
-                max-width: 800px;
-                margin: 0 auto;
-            }
-
-            .iframe-container .header {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                cursor: pointer;
-                border-radius: var(--radius-md);
-                font-size: 1.1rem;
-                font-weight: 600;
-                letter-spacing: 0.04em;
-                color: var(--text-color);
-            }
-
-            .iframe-container .header::after {
-                content: "↗";
-                font-size: 1rem;
-                color: var(--accent);
-                transition: transform var(--transition-base);
-            }
-
-            .iframe-container .header:hover::after,
-            .iframe-container .header:focus-visible::after {
-                transform: translate(4px, -4px);
-            }
-
-            .iframe-stage {
-                position: relative;
-                border-radius: var(--radius-md);
-                overflow: hidden;
-                padding: 14px;
-                background: linear-gradient(135deg, rgba(18, 22, 32, 0.85), rgba(12, 16, 24, 0.75));
-                box-shadow: inset 0 0 0 1px rgba(108, 158, 255, 0.12);
-                isolation: isolate;
-            }
-
-            .iframe-stage::before {
-                content: "";
-                position: absolute;
-                inset: 0;
-                border-radius: inherit;
-                background: radial-gradient(circle at top right, rgba(108, 158, 255, 0.22), transparent 55%);
-                z-index: -1;
+                width: 100%;
             }
 
             .statusframe {
                 display: block;
                 width: 100%;
-                height: 340px;
-                border: none;
-                border-radius: calc(var(--radius-md) - 8px);
-                /* nobg=1 keeps the widget transparent, so the stage shows through. */
+                height: 2800px;
+                border: 0;
                 background: transparent;
-                box-shadow: inset 0 0 0 1px rgba(108, 158, 255, 0.16);
+                opacity: 0;
                 transition: opacity var(--transition-base);
             }
 
             .loading-indicator {
                 position: absolute;
-                inset: 0;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 280px;
                 display: flex;
                 justify-content: center;
                 align-items: center;
                 gap: 12px;
                 color: var(--text-muted);
-                height: 100%;
                 opacity: 1;
-                backdrop-filter: blur(6px);
-                background: linear-gradient(135deg, rgba(5, 8, 14, 0.58), rgba(18, 24, 36, 0.58));
                 pointer-events: none;
                 transition: opacity var(--transition-base);
             }
@@ -496,12 +446,8 @@
                     padding: 18px;
                 }
 
-                .iframe-stage {
-                    padding: 8px;
-                }
-
                 .statusframe {
-                    height: 335px;
+                    height: 2800px;
                 }
 
                 svg {
@@ -511,22 +457,14 @@
             }
         </style>
         <script type="text/javascript">
-            const servers = [
-                {
-                    id: "status-eu-de",
-                    shareUrl: "https://rcon.quantumrabbit.de/share/c/pvFQmC-3TDa7a_vx18jdkAlJN3uGn6eK0bKxIupdyvg",
-                    label: "Europe (EU)",
-                    ariaLabel: "Open Europe server statistics in a new tab"
-                }
-            ];
-
-            const embedQuery = "?notitle=1&nobg=1&width=710&height=300";
+            const SHARE_URL =
+                "https://rcon.quantumrabbit.de/share/s/D9GciUwlxzfpGGHlD0o0PYUoNK70IY9_iI45hNRfI-E?nobg=1";
 
             enforceNoCookies();
 
             document.addEventListener("DOMContentLoaded", () => {
                 initMenu();
-                initServers();
+                initStatus();
                 initCodeViews();
                 initPrivacyBadge();
                 trapTabFocus();
@@ -618,62 +556,10 @@
                 }
             }
 
-            function initServers() {
-                const container = document.getElementById("status-container");
-                if (!container) return;
-
-                servers.forEach((server) => {
-                    const { id, shareUrl, label, ariaLabel } = server;
-                    const wrapper = document.createElement("div");
-                    wrapper.className = "content-sub";
-
-                    const card = document.createElement("div");
-                    card.className = "iframe-container card";
-
-                    // The embedded dashboard is interactive, so only the header acts as
-                    // the "open in a new tab" control — the card itself must stay plain.
-                    const header = document.createElement("div");
-                    header.className = "header";
-                    header.textContent = label;
-                    header.setAttribute("tabindex", "0");
-                    header.setAttribute("role", "button");
-                    header.setAttribute("aria-label", ariaLabel || label);
-
-                    const iframe = document.createElement("iframe");
-                    iframe.className = "statusframe";
-                    iframe.id = id;
-                    iframe.setAttribute("title", `Server statistics ${label}`);
-                    iframe.setAttribute("loading", "lazy");
-                    iframe.setAttribute("referrerpolicy", "no-referrer");
-                    iframe.style.opacity = "0";
-
-                    const loading = document.createElement("div");
-                    loading.id = `${id}_loading`;
-                    loading.className = "loading-indicator";
-                    loading.innerHTML = '<span class="spinner" aria-hidden="true"></span><span>Loading server statistics…</span>';
-
-                    const stage = document.createElement("div");
-                    stage.className = "iframe-stage";
-                    stage.append(iframe, loading);
-
-                    card.append(header, stage);
-                    wrapper.append(card);
-                    container.append(wrapper);
-
-                    const openServerDetails = () => {
-                        window.open(shareUrl, "_blank", "noopener,noreferrer");
-                    };
-
-                    header.addEventListener("click", openServerDetails);
-                    header.addEventListener("keydown", (event) => {
-                        if (event.key === "Enter" || event.key === " ") {
-                            event.preventDefault();
-                            openServerDetails();
-                        }
-                    });
-
-                    hydrateIframe(iframe, loading, `${shareUrl}${embedQuery}`);
-                });
+            function initStatus() {
+                const iframe = document.getElementById("status-dashboard");
+                const loading = document.getElementById("status-dashboard_loading");
+                hydrateIframe(iframe, loading, SHARE_URL);
             }
 
             function hydrateIframe(iframe, loadingElement, embedUrl) {
@@ -780,7 +666,19 @@
             </header>
 
             <section class="segment content content-active" id="content-status" role="tabpanel" aria-label="Server status" aria-hidden="false">
-                <div class="content-wrapper" id="status-container"></div>
+                <div class="status-embed">
+                    <iframe
+                        class="statusframe"
+                        id="status-dashboard"
+                        title="Live server statistics"
+                        loading="lazy"
+                        referrerpolicy="no-referrer"
+                    ></iframe>
+                    <div id="status-dashboard_loading" class="loading-indicator">
+                        <span class="spinner" aria-hidden="true"></span>
+                        <span>Loading live dashboard…</span>
+                    </div>
+                </div>
             </section>
 
             <section class="segment content" id="content-configuration" role="tabpanel" aria-label="Server configuration" aria-hidden="true" hidden>
