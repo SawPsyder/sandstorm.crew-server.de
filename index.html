@@ -193,6 +193,98 @@
                 color: var(--text-muted);
             }
 
+            .status-wrapper {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .status-header-card {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 16px;
+                padding: 20px 24px;
+            }
+
+            .status-header-title {
+                margin: 0 0 4px;
+                font-size: 1.15rem;
+                font-weight: 600;
+                letter-spacing: 0.02em;
+                color: var(--text-color);
+            }
+
+            .status-header-desc {
+                margin: 0;
+                font-size: 0.88rem;
+                color: var(--text-muted);
+            }
+
+            .status-action-link {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 10px 18px;
+                border-radius: var(--radius-sm);
+                background: rgba(108, 158, 255, 0.12);
+                border: 1px solid rgba(108, 158, 255, 0.28);
+                color: var(--accent);
+                font-size: 0.9rem;
+                font-weight: 500;
+                text-decoration: none;
+                cursor: pointer;
+                white-space: nowrap;
+                transition: background-color var(--transition-base), transform var(--transition-base), border-color var(--transition-base), color var(--transition-base);
+            }
+
+            .status-action-link:hover,
+            .status-action-link:focus-visible {
+                background: rgba(108, 158, 255, 0.24);
+                border-color: var(--accent);
+                transform: translateY(-2px);
+                color: var(--text-color);
+            }
+
+            .status-action-link span[aria-hidden="true"] {
+                font-size: 1.1rem;
+                line-height: 1;
+            }
+
+            .status-fallback {
+                display: none;
+                width: 100%;
+                text-align: center;
+            }
+
+            .status-fallback.is-active {
+                display: block;
+            }
+
+            .status-fallback-card {
+                padding: 36px 24px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .status-fallback-title {
+                margin: 0;
+                font-size: 1.15rem;
+                font-weight: 600;
+                color: var(--text-color);
+            }
+
+            .status-fallback-desc {
+                margin: 0;
+                max-width: 520px;
+                font-size: 0.92rem;
+                line-height: 1.5;
+                color: var(--text-muted);
+            }
+
             .status-embed {
                 position: relative;
                 width: 100%;
@@ -202,6 +294,7 @@
                 display: block;
                 width: 100%;
                 height: 2800px;
+                min-height: 500px;
                 border: 0;
                 background: transparent;
                 opacity: 0;
@@ -446,6 +539,17 @@
                     padding: 18px;
                 }
 
+                .status-header-card {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 14px;
+                }
+
+                .status-action-link {
+                    width: 100%;
+                    justify-content: center;
+                }
+
                 .statusframe {
                     height: 2800px;
                 }
@@ -559,22 +663,72 @@
             function initStatus() {
                 const iframe = document.getElementById("status-dashboard");
                 const loading = document.getElementById("status-dashboard_loading");
-                hydrateIframe(iframe, loading, SHARE_URL);
+                const fallback = document.getElementById("status-dashboard_fallback");
+                const container = document.getElementById("status-embed-container");
+                hydrateIframe(iframe, loading, fallback, container, SHARE_URL);
             }
 
-            function hydrateIframe(iframe, loadingElement, embedUrl) {
-                if (!iframe || !loadingElement) return;
+            function hydrateIframe(iframe, loadingElement, fallbackElement, containerElement, embedUrl) {
+                if (!iframe) return;
+
+                let isLoaded = false;
+                let fallbackTimer = null;
+
+                const showFallback = () => {
+                    if (isLoaded) return;
+                    if (fallbackTimer) clearTimeout(fallbackTimer);
+                    if (loadingElement) loadingElement.style.display = "none";
+                    if (containerElement) containerElement.style.display = "none";
+                    if (fallbackElement) {
+                        fallbackElement.hidden = false;
+                        fallbackElement.classList.add("is-active");
+                    }
+                };
+
+                const markLoaded = () => {
+                    if (isLoaded) return;
+                    isLoaded = true;
+                    if (fallbackTimer) clearTimeout(fallbackTimer);
+                    setTimeout(() => {
+                        if (loadingElement) loadingElement.style.opacity = "0";
+                        iframe.style.opacity = "1";
+                    }, 500);
+                };
+
+                // Resize support from RCON Server Manager embed
+                window.addEventListener("message", (event) => {
+                    if (event.origin !== "https://rcon.quantumrabbit.de") return;
+                    if (event.data && event.data.type === "rcon:stats:resize" && event.data.height) {
+                        iframe.style.height = `${Math.max(450, Number(event.data.height))}px`;
+                        markLoaded();
+                    }
+                });
 
                 iframe.style.transition = "opacity 0.45s ease";
 
                 iframe.addEventListener("load", () => {
-                    // The dashboard is a client-rendered app; give it a beat to paint
-                    // before revealing it, otherwise the frame flashes empty.
-                    setTimeout(() => {
-                        loadingElement.style.opacity = "0";
-                        iframe.style.opacity = "1";
-                    }, 600);
+                    try {
+                        const cw = iframe.contentWindow;
+                        if (!cw) {
+                            showFallback();
+                            return;
+                        }
+                    } catch (_) {
+                        // Cross-origin restriction is expected
+                    }
+                    markLoaded();
                 });
+
+                iframe.addEventListener("error", () => {
+                    showFallback();
+                });
+
+                // Fallback timer: if embed fails to render within 5 seconds, reveal fallback
+                fallbackTimer = setTimeout(() => {
+                    if (!isLoaded && iframe.style.opacity !== "1") {
+                        showFallback();
+                    }
+                }, 5000);
 
                 iframe.src = embedUrl;
             }
@@ -666,17 +820,58 @@
             </header>
 
             <section class="segment content content-active" id="content-status" role="tabpanel" aria-label="Server status" aria-hidden="false">
-                <div class="status-embed">
-                    <iframe
-                        class="statusframe"
-                        id="status-dashboard"
-                        title="Live server statistics"
-                        loading="lazy"
-                        referrerpolicy="no-referrer"
-                    ></iframe>
-                    <div id="status-dashboard_loading" class="loading-indicator">
-                        <span class="spinner" aria-hidden="true"></span>
-                        <span>Loading live dashboard…</span>
+                <div class="content-wrapper status-wrapper">
+                    <div class="content-sub">
+                        <div class="card status-header-card">
+                            <div>
+                                <h2 class="status-header-title">Live Server Statistics</h2>
+                                <p class="status-header-desc">Europe (EU) &bull; Player count, live roster and map popularity</p>
+                            </div>
+                            <a
+                                href="https://rcon.quantumrabbit.de/share/s/D9GciUwlxzfpGGHlD0o0PYUoNK70IY9_iI45hNRfI-E"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="status-action-link"
+                                aria-label="Open live statistics dashboard in a new tab"
+                            >
+                                <span>Open Full Dashboard</span>
+                                <span aria-hidden="true">↗</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div id="status-dashboard_fallback" class="status-fallback" hidden>
+                        <div class="content-sub">
+                            <div class="card status-fallback-card">
+                                <h3 class="status-fallback-title">Embedded Dashboard Blocked</h3>
+                                <p class="status-fallback-desc">
+                                    Your browser or network policy is restricting iframe embedding for this source (X-Frame-Options). You can access the live dashboard directly in a new window:
+                                </p>
+                                <a
+                                    href="https://rcon.quantumrabbit.de/share/s/D9GciUwlxzfpGGHlD0o0PYUoNK70IY9_iI45hNRfI-E"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="status-action-link"
+                                    style="margin-top: 8px;"
+                                >
+                                    <span>Launch Live Statistics</span>
+                                    <span aria-hidden="true">↗</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="status-embed" id="status-embed-container">
+                        <iframe
+                            class="statusframe"
+                            id="status-dashboard"
+                            title="Live server statistics"
+                            referrerpolicy="no-referrer"
+                        ></iframe>
+                        <div id="status-dashboard_loading" class="loading-indicator">
+                            <span class="spinner" aria-hidden="true"></span>
+                            <span>Loading live dashboard…</span>
+                        </div>
                     </div>
                 </div>
             </section>
